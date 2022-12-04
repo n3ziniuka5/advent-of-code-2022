@@ -1,9 +1,6 @@
 package aoc
 
-import aoc.Common.{enqueueAndKeepMaxSize, timed}
-
-import scala.annotation.tailrec
-import scala.collection.mutable
+import aoc.Common.timed
 import scala.io.Source
 
 object Day4:
