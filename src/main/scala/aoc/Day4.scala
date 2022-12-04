@@ -26,7 +26,7 @@ object Day4 {
   }
 
   def fullyOverlap(r1: Range, r2: Range): Boolean = {
-    r1.start <= r2.start && r1.end >= r2.end
+    r1.end >= r2.end
   }
 
   def overlap(r1: Range, r2: Range): Boolean = {
