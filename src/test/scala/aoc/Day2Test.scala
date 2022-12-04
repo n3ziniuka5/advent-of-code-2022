@@ -9,7 +9,7 @@ object Day2Test extends ZIOSpecDefault {
     "C Z"
   )
 
-  override def spec = suite("Day 1")(
+  override def spec = suite("Day 2")(
     test("Part 1")(assertTrue(Day2.part1(input) == 15)),
     test("Part 2")(assertTrue(Day2.part2(input) == 12))
   )

@@ -1,29 +1,29 @@
 package aoc
 
 import aoc.Common.timed
-import aoc.Day2.Shape.{PAPER, ROCK, SCISSORS}
+import aoc.Day2.Shape.{Paper, Rock, Scissors}
 
 import scala.io.Source
 import scala.math.floorMod
 
 object Day2 {
   enum Shape {
-    case ROCK, PAPER, SCISSORS
+    case Rock, Paper, Scissors
   }
 
   val toShape = Map(
-    "A" -> ROCK,
-    "B" -> PAPER,
-    "C" -> SCISSORS,
-    "X" -> ROCK,
-    "Y" -> PAPER,
-    "Z" -> SCISSORS
+    "A" -> Rock,
+    "B" -> Paper,
+    "C" -> Scissors,
+    "X" -> Rock,
+    "Y" -> Paper,
+    "Z" -> Scissors
   )
 
   val toPoints = Map(
-    ROCK     -> 0,
-    PAPER    -> 1,
-    SCISSORS -> 2
+    Rock     -> 0,
+    Paper    -> 1,
+    Scissors -> 2
   )
 
   def main(args: Array[String]): Unit = {
@@ -36,9 +36,9 @@ object Day2 {
     def lineToPoints(line: String): Int = {
       val Array(opponent, you) = line.split(' ').map(toShape)
       val victoryScore = (opponent, you) match {
-        case (ROCK, PAPER)        => 6
-        case (PAPER, SCISSORS)    => 6
-        case (SCISSORS, ROCK)     => 6
+        case (Rock, Paper)        => 6
+        case (Paper, Scissors)    => 6
+        case (Scissors, Rock)     => 6
         case _ if opponent == you => 3
         case _                    => 0
       }
