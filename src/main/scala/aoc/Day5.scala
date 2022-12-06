@@ -22,22 +22,22 @@ object Day5:
   def readInput(lines: List[String]): (Vector[List[Char]], List[Move]) =
     @tailrec
     def loop(lines: List[String], stacks: Vector[List[Char]]): (Vector[List[Char]], List[Move]) =
-      lines match
-        case head :: tail =>
-          if (head.charAt(1) == '1') {
-            (stacks.map(_.reverse), tail.tail.map(parseMoves))
-          } else {
-            val toAdd = head.sliding(3, 4).map { s =>
-              if (s.trim.isEmpty) None
-              else Some(s.charAt(1))
-            }
+      val head = lines.head
+      val tail = lines.tail
+      if (head.charAt(1) == '1') {
+        (stacks.map(_.reverse), tail.tail.map(parseMoves))
+      } else {
+        val toAdd = head.sliding(3, 4).map { s =>
+          if (s.trim.isEmpty) None
+          else Some(s.charAt(1))
+        }
 
-            val newStacks = stacks.zip(toAdd).map { (stack, toAdd) =>
-              toAdd.toList ++ stack
-            }
+        val newStacks = stacks.zip(toAdd).map { (stack, toAdd) =>
+          toAdd.toList ++ stack
+        }
 
-            loop(tail, newStacks)
-          }
+        loop(tail, newStacks)
+      }
 
     val numCrates = lines.head.sliding(3, 4).size
     loop(lines, Vector.fill(numCrates)(List.empty))
