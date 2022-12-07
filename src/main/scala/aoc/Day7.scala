@@ -8,8 +8,8 @@ import scala.io.Source
 object Day7:
   def main(args: Array[String]): Unit =
     val lines = Source.fromResource("day7.txt").getLines().toList
-    println(part1(lines))
-    println(part2(lines))
+    timed("Part 1", part1(lines))
+    timed("Part 2", part2(lines))
 
   val cdR = "\\$ cd (.+)".r
 
