@@ -36,10 +36,10 @@ object Day9:
 
   def follow(positions: List[Pos]): List[Pos] =
     @tailrec
-    def loop(positions: List[Pos], headPos: Pos, tailPos: Pos, tailVisited: List[Pos]): List[Pos] =
+    def loop(positions: List[Pos], tailPos: Pos, tailVisited: List[Pos]): List[Pos] =
       positions match
         case head :: tail =>
-          if (touching(head, tailPos)) loop(tail, head, tailPos, tailVisited)
+          if (touching(head, tailPos)) loop(tail, tailPos, tailVisited)
           else
             val newTailPos =
               if (head.x == tailPos.x || head.y == tailPos.y)
@@ -48,11 +48,11 @@ object Day9:
                 val xAdjusted =
                   if (head.x > tailPos.x) tailPos.copy(x = tailPos.x + 1) else tailPos.copy(x = tailPos.x - 1)
                 if (head.y > tailPos.y) xAdjusted.copy(y = xAdjusted.y + 1) else xAdjusted.copy(y = xAdjusted.y - 1)
-            loop(tail, head, newTailPos, newTailPos +: tailVisited)
+            loop(tail, newTailPos, newTailPos +: tailVisited)
         case Nil =>
           tailVisited.reverse
 
-    loop(positions, positions.head, positions.head, List(positions.head))
+    loop(positions, positions.head, List(positions.head))
 
   def followNthKnot(lines: List[String], knot: Int): List[Pos] =
     val headPositions = explodeInput(lines).scanLeft(Pos(0, 0))(move)
