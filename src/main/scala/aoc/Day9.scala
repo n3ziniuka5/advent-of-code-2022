@@ -58,7 +58,6 @@ object Day9:
                 headPos
             loop(tail, head, newTailPos, newTailPos +: tailVisited)
         case Nil =>
-          println(s"ANS ${tailVisited.reverse}")
           tailVisited.reverse
 
     loop(positions, positions.head, positions.head, List(positions.head))
