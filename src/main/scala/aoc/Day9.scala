@@ -42,20 +42,12 @@ object Day9:
           if (touching(head, tailPos)) loop(tail, head, tailPos, tailVisited)
           else
             val newTailPos =
-              if (head.x == tailPos.x)
-                tailPos.copy(y = (head.y + tailPos.y) / 2)
-              else if (head.y == tailPos.y)
-                tailPos.copy(x = (head.x + tailPos.x) / 2)
-              else if (head.y > tailPos.y && head.x > tailPos.x)
-                tailPos.copy(x = tailPos.x + 1, y = tailPos.y + 1)
-              else if (head.y > tailPos.y && head.x < tailPos.x)
-                tailPos.copy(x = tailPos.x - 1, y = tailPos.y + 1)
-              else if (head.y < tailPos.y && head.x < tailPos.x)
-                tailPos.copy(x = tailPos.x - 1, y = tailPos.y - 1)
-              else if (head.y < tailPos.y && head.x > tailPos.x)
-                tailPos.copy(x = tailPos.x + 1, y = tailPos.y - 1)
+              if (head.x == tailPos.x || head.y == tailPos.y)
+                tailPos.copy(x = (head.x + tailPos.x) / 2, y = (head.y + tailPos.y) / 2)
               else
-                headPos
+                val xAdjusted =
+                  if (head.x > tailPos.x) tailPos.copy(x = tailPos.x + 1) else tailPos.copy(x = tailPos.x - 1)
+                if (head.y > tailPos.y) xAdjusted.copy(y = xAdjusted.y + 1) else xAdjusted.copy(y = xAdjusted.y - 1)
             loop(tail, head, newTailPos, newTailPos +: tailVisited)
         case Nil =>
           tailVisited.reverse
@@ -64,10 +56,10 @@ object Day9:
 
   def followNthKnot(lines: List[String], knot: Int): List[Pos] =
     val headPositions = explodeInput(lines).scanLeft(Pos(0, 0))(move)
-    (1 to knot).foldLeft(headPositions)((a, _) => follow(a))
+    (1 until knot).foldLeft(headPositions)((a, _) => follow(a))
 
   def part1(lines: List[String]): Int =
-    followNthKnot(lines, 1).distinct.size
+    followNthKnot(lines, 2).distinct.size
 
   def part2(lines: List[String]): Int =
-    followNthKnot(lines, 9).distinct.size
+    followNthKnot(lines, 10).distinct.size
