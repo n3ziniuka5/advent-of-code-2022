@@ -39,10 +39,24 @@ object Day9:
     def loop(positions: List[Pos], headPos: Pos, tailPos: Pos, tailVisited: List[Pos]): List[Pos] =
       positions match
         case head :: tail =>
-          if (touching(head, tailPos))
-            loop(tail, head, tailPos, tailVisited)
+          if (touching(head, tailPos)) loop(tail, head, tailPos, tailVisited)
           else
-            loop(tail, head, headPos, headPos +: tailVisited)
+            val newTailPos =
+              if (head.x == tailPos.x)
+                tailPos.copy(y = (head.y + tailPos.y) / 2)
+              else if (head.y == tailPos.y)
+                tailPos.copy(x = (head.x + tailPos.x) / 2)
+              else if (head.y > tailPos.y && head.x > tailPos.x)
+                tailPos.copy(x = tailPos.x + 1, y = tailPos.y + 1)
+              else if (head.y > tailPos.y && head.x < tailPos.x)
+                tailPos.copy(x = tailPos.x - 1, y = tailPos.y + 1)
+              else if (head.y < tailPos.y && head.x < tailPos.x)
+                tailPos.copy(x = tailPos.x - 1, y = tailPos.y - 1)
+              else if (head.y < tailPos.y && head.x > tailPos.x)
+                tailPos.copy(x = tailPos.x + 1, y = tailPos.y - 1)
+              else
+                headPos
+            loop(tail, head, newTailPos, newTailPos +: tailVisited)
         case Nil =>
           println(s"ANS ${tailVisited.reverse}")
           tailVisited.reverse
@@ -57,4 +71,4 @@ object Day9:
     followNthKnot(lines, 1).distinct.size
 
   def part2(lines: List[String]): Int =
-    followNthKnot(lines, 10).distinct.size
+    followNthKnot(lines, 9).distinct.size

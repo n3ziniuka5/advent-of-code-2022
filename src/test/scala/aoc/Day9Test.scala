@@ -26,8 +26,8 @@ object Day9Test extends ZIOSpecDefault {
   )
 
   override def spec = suite("Day 9")(
-    // test("Part 1")(assertTrue(Day9.part1(input) == 13)),
+    test("Part 1")(assertTrue(Day9.part1(input) == 13)),
     test("Part 2")(assertTrue(Day9.part2(input) == 1)),
-    // test("Part 2")(assertTrue(Day9.part2(largerExample) == 36))
+    test("Part 2")(assertTrue(Day9.part2(largerExample) == 36))
   )
 }
