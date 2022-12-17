@@ -6,6 +6,7 @@ import aoc.Day16Types.{Minute, Pressure}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.io.Source
+import scala.collection.parallel.CollectionConverters._
 
 object Day16Types:
   opaque type Minute = Int
@@ -38,7 +39,8 @@ object Day16:
   case class VisitState(
     position: String,
     openValves: Set[Valve],
-    remainingValves: Map[String, Valve]
+    remainingValves: Map[String, Valve],
+    visited: Int
   )
   case class Valve(flowRate: Int, leadsTo: List[String])
 
@@ -57,6 +59,12 @@ object Day16:
 
     loop(mutable.PriorityQueue((from, Minute(0)))(Ordering.by(-_._2)), Set.empty)
 
+  def distanceMap(valves: Map[String, Valve]): Map[(String, String), Minute] =
+    (for {
+      from <- valves.keySet
+      to   <- valves.keySet if from != to
+    } yield (from, to)).map((from, to) => (from, to) -> timeToOpen(from, to, valves)).toMap
+
   def parse(lines: List[String]): Map[String, Valve] =
     lines.map {
       case s"Valve $valve has flow rate=$flowRateString; tunnel leads to valve $leadsTo" =>
@@ -65,50 +73,73 @@ object Day16:
         valve -> Valve(flowRateString.toInt, leadsTo.split(", ").toList)
     }.toMap
 
-  def solve(lines: List[String]): Pressure =
+  def solve(
+    valves: Map[String, Valve],
+    toOpen: Map[String, Valve],
+    startingTime: Minute,
+    distanceMap: Map[(String, String), Minute]
+  ): (Pressure, Int) =
     @tailrec
     def loop(
       queue: mutable.PriorityQueue[(VisitState, Minute, Pressure)],
-      visited: Set[VisitState],
       valves: Map[String, Valve]
-    ): Pressure =
+    ): (Pressure, Int) =
       val (visitState, timeRemaining, pressureReleased) = queue.dequeue()
-      if (timeRemaining == 0) pressureReleased
-      // else if (visited.contains(visitState)) loop(queue, visited, valves)
+      if (timeRemaining == 0) (pressureReleased, visitState.visited)
       else
-        val tryToOpen = visitState.remainingValves.map { case (pos, v) =>
-          val a = timeToOpen(visitState.position, pos, valves)
-          (
-            VisitState(pos, visitState.openValves + v, visitState.remainingValves - pos),
-            timeRemaining - a,
-            pressureReleased + Pressure(visitState.openValves.map(_.flowRate).sum * a.asInt)
-          )
-        }
-          // .filter(_._2 > Minute(0))
-          // .filterNot(s => visited.contains(s._1))
+        val tryToOpen = visitState.remainingValves
+          .map { case (pos, v) =>
+            val minutesToMove = distanceMap((visitState.position, pos))
+            (
+              VisitState(pos, visitState.openValves + v, visitState.remainingValves - pos, visitState.visited + 1),
+              timeRemaining - minutesToMove,
+              pressureReleased + Pressure(visitState.openValves.map(_.flowRate).sum * minutesToMove.asInt)
+            )
+          }
+          .filter(_._2 > Minute(0))
           .toList
         queue.enqueue(tryToOpen: _*)
-        queue.enqueue(
-          (
-            visitState,
-            Minute(0),
-            pressureReleased + Pressure(visitState.openValves.map(_.flowRate).sum * timeRemaining.asInt)
+
+        if (tryToOpen.isEmpty)
+          queue.enqueue(
+            (
+              visitState,
+              Minute(0),
+              pressureReleased + Pressure(visitState.openValves.map(_.flowRate).sum * timeRemaining.asInt)
+            )
           )
-        )
 
-        loop(queue, visited + visitState, valves)
+        loop(queue, valves)
 
-    val valves = parse(lines)
-    val toOpen = valves.filter(_._2.flowRate != 0)
     loop(
       mutable
-        .PriorityQueue((VisitState("AA", Set.empty, toOpen), Minute(30), Pressure(0)))(Ordering.by(a => (a._2, a._3))),
-      Set.empty,
+        .PriorityQueue((VisitState("AA", Set.empty, toOpen, 0), startingTime, Pressure(0)))(
+          Ordering.by(a => (a._2, a._3))
+        ),
       valves
     )
 
   def part1(lines: List[String]): Pressure =
-    solve(lines)
+    val valves = parse(lines)
+    solve(valves, valves.filter(_._2.flowRate != 0), Minute(30), distanceMap(valves))._1
 
   def part2(lines: List[String]): Pressure =
-    Pressure(0)
+    val valves              = parse(lines)
+    val withoutZeroPressure = valves.filter(_._2.flowRate != 0)
+    val map                 = distanceMap(valves)
+
+    val (_, workingAlonePaths) = solve(valves, withoutZeroPressure, Minute(26), map)
+    val combinationSize =
+      if (workingAlonePaths > (withoutZeroPressure.size / 2))
+        withoutZeroPressure.size / 2
+      else workingAlonePaths + 1
+
+    withoutZeroPressure.toList
+      .combinations(combinationSize)
+      .toList
+      .par
+      .map { myPaths =>
+        solve(valves, myPaths.toMap, Minute(26), map)._1 +
+          solve(valves, withoutZeroPressure -- myPaths.map(_._1), Minute(26), map)._1
+      }
+      .max
