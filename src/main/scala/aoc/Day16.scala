@@ -74,16 +74,12 @@ object Day16:
     }.toMap
 
   def solve(
-    valves: Map[String, Valve],
     toOpen: Map[String, Valve],
     startingTime: Minute,
     distanceMap: Map[(String, String), Minute]
   ): (Pressure, Int) =
     @tailrec
-    def loop(
-      queue: mutable.PriorityQueue[(VisitState, Minute, Pressure)],
-      valves: Map[String, Valve]
-    ): (Pressure, Int) =
+    def loop(queue: mutable.PriorityQueue[(VisitState, Minute, Pressure)]): (Pressure, Int) =
       val (visitState, timeRemaining, pressureReleased) = queue.dequeue()
       if (timeRemaining == 0) (pressureReleased, visitState.visited)
       else
@@ -109,37 +105,33 @@ object Day16:
             )
           )
 
-        loop(queue, valves)
+        loop(queue)
 
     loop(
       mutable
         .PriorityQueue((VisitState("AA", Set.empty, toOpen, 0), startingTime, Pressure(0)))(
           Ordering.by(a => (a._2, a._3))
-        ),
-      valves
+        )
     )
 
   def part1(lines: List[String]): Pressure =
     val valves = parse(lines)
-    solve(valves, valves.filter(_._2.flowRate != 0), Minute(30), distanceMap(valves))._1
+    solve(valves.filter(_._2.flowRate != 0), Minute(30), distanceMap(valves))._1
 
   def part2(lines: List[String]): Pressure =
     val valves              = parse(lines)
     val withoutZeroPressure = valves.filter(_._2.flowRate != 0)
     val map                 = distanceMap(valves)
 
-    val (_, workingAlonePaths) = solve(valves, withoutZeroPressure, Minute(26), map)
-    val combinationSize =
-      if (workingAlonePaths > (withoutZeroPressure.size / 2))
-        withoutZeroPressure.size / 2
-      else workingAlonePaths + 1
+    val (_, workingAlonePaths) = solve(withoutZeroPressure, Minute(26), map)
+    val combinationSize        = math.min(workingAlonePaths, withoutZeroPressure.size / 2)
 
     withoutZeroPressure.toList
       .combinations(combinationSize)
       .toList
       .par
       .map { myPaths =>
-        solve(valves, myPaths.toMap, Minute(26), map)._1 +
-          solve(valves, withoutZeroPressure -- myPaths.map(_._1), Minute(26), map)._1
+        solve(myPaths.toMap, Minute(26), map)._1 +
+          solve(withoutZeroPressure -- myPaths.map(_._1), Minute(26), map)._1
       }
       .max
