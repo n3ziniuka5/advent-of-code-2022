@@ -57,10 +57,10 @@ object Day19:
     def canBuildGeodeRobot(blueprint: Blueprint): Boolean =
       ore >= blueprint.geodeRobotCost.ore && obsidian >= blueprint.geodeRobotCost.obsidian
 
-    def advanceTimeUntil(pred: State => Boolean): Option[State] = {
+    def advanceTimeUntil(pred: State => Boolean, minimumRemainingTime: Int): Option[State] = {
       @tailrec
       def loop(state: State): Option[State] =
-        if (state.timeRemaining < 2) None
+        if (state.timeRemaining < minimumRemainingTime) None
         else if (pred(state)) Some(state)
         else loop(state.advanceTime(1))
 
@@ -105,7 +105,7 @@ object Day19:
         val buildGeodeRobot =
           if (state.obsidianRobots > 0)
             state
-              .advanceTimeUntil(_.canBuildGeodeRobot(blueprint))
+              .advanceTimeUntil(_.canBuildGeodeRobot(blueprint), 2)
               .map(
                 _.advanceTime(1)
                   .addGeodeRobot(blueprint)
@@ -118,13 +118,15 @@ object Day19:
             state.clayRobots > 0 &&
             state.obsidianRobots < blueprint.maxObsidianRobots
           )
-            state.advanceTimeUntil(_.canBuildObsidianRobot(blueprint)).map(_.advanceTime(1).addObsidianRobot(blueprint))
+            state
+              .advanceTimeUntil(_.canBuildObsidianRobot(blueprint), 3)
+              .map(_.advanceTime(1).addObsidianRobot(blueprint))
           else None
 
         val buildClayRobot =
           if (!state.canBuildGeodeRobot(blueprint) && state.clayRobots < blueprint.maxClayRobots)
             state
-              .advanceTimeUntil(_.canBuildClayRobot(blueprint))
+              .advanceTimeUntil(_.canBuildClayRobot(blueprint), 3)
               .map(
                 _.advanceTime(1)
                   .addClayRobot(blueprint)
@@ -133,7 +135,7 @@ object Day19:
 
         val buildOreRobot =
           if (!state.canBuildGeodeRobot(blueprint) && state.oreRobots < blueprint.maxOreRobots)
-            state.advanceTimeUntil(_.canBuildOreRobot(blueprint)).map(_.advanceTime(1).addOreRobot(blueprint))
+            state.advanceTimeUntil(_.canBuildOreRobot(blueprint), 3).map(_.advanceTime(1).addOreRobot(blueprint))
           else None
 
         val justWait =
