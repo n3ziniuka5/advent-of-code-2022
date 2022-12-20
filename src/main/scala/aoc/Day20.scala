@@ -22,34 +22,36 @@ object Day20:
       0
     }
 
-  def solve(input: mutable.ArrayBuffer[Long]): mutable.ArrayBuffer[Long] =
-    def loop(i: Int, a: mutable.ArrayBuffer[(Long, Boolean)]): mutable.ArrayBuffer[(Long, Boolean)] =
+  def mixNumbers(input: mutable.ArrayBuffer[Long], timesToMix: Int): mutable.ArrayBuffer[Long] =
+    def loop(i: Int, a: mutable.ArrayBuffer[(Long, Int)], indexMap: Map[Int, Int]): mutable.ArrayBuffer[(Long, Int)] =
       if (i >= a.size)
-        println(s"final sequence is ${a.toList.map(_._1)}")
-        println(s"untouched elements ${a.filter(!_._2).toList}")
+        // println(s"final sequence is ${a.toList.map(_._1)}")
+        // println(s"untouched elements ${a.filter(!_._2).toList}")
         a
-      else if (a(i)._2) loop(i + 1, a)
+      // else if (a(i)._2) loop(i + 1, a)
       // else if (a(i)._1 != 11 && a(i)._1 != 12) loop(i + 1, a) // todo
       // else if (a(i)._1 > 65) loop(i + 1, a) // todo
-      else if (a(i)._1 == 0) loop(i + 1, a)
+      // else if (a(i)._1 == 0) loop(i + 1, a)
       else {
-        println(s"current sequence is ${a.map(_._1).toList}")
-        val (dI, _) = a(i)
+        // println(s"current sequence is ${a.map(_._1).toList}")
+
+        val actualI = a.indexWhere(_._2 == i)
+
+        val org @ (dI, _) = a(actualI)
 
         if (dI > 0) {
-          val newIndex = i + dI
-
+          val newIndex = actualI + dI
           val adjustedNewIndex = if (newIndex >= a.size) {
             // val numberOfWrapArounds = newIndex / a.size
             val numberOfWrapArounds = {
 
-              val magicNumber = i + (a.size - i - 1)
+              val magicNumber = actualI + (a.size - actualI - 1)
 
-              println(s"i + (a.size - i - 1) = ${i + (a.size - i - 1)}")
-              println(s" ((newIndex - 1) / magicNumber) = ${((newIndex - 1) / magicNumber)}")
+              /*println(s"i + (a.size - i - 1) = ${i + (a.size - i - 1)}")
+              println(s" ((newIndex - 1) / magicNumber) = ${((newIndex - 1) / magicNumber)}")*/
               ((newIndex - 1) / magicNumber)
             }
-            println(s"WRAP AROUND ${numberOfWrapArounds}")
+            // println(s"WRAP AROUND ${numberOfWrapArounds}")
 
             (newIndex + numberOfWrapArounds) % a.size
           } else {
@@ -58,28 +60,28 @@ object Day20:
 
           // println(s"moving $dI from $i to $adjustedNewIndex")
 
-          if (adjustedNewIndex == i) {
+          /*if (adjustedNewIndex == i) {
             // println("FISHY STUFF POS NUMBER")
-          }
+          }*/
 
-          a.remove(i)
-          a.insert(adjustedNewIndex.toInt, (dI, true))
+          a.remove(actualI)
+          a.insert(adjustedNewIndex.toInt, org)
         } else {
-          val newIndex = i + dI
+          val newIndex = actualI + dI
           val adjustedNewIndex = if (newIndex < 0) {
             // val numberOfWrapArounds = (newIndex / a.size) - 1
 
             val numberOfWrapArounds = {
-              val magicNumber = i + (a.size - i - 1)
-              println(s"MAGIC NUMBER IS $magicNumber")
+              val magicNumber = actualI + (a.size - actualI - 1)
+              /*println(s"MAGIC NUMBER IS $magicNumber")
 
               println(s"i + (a.size - i - 1) = ${i + (a.size - i - 1)}")
-              println(s" ((newIndex - 1) / magicNumber) = ${((newIndex - 1) / magicNumber)}")
+              println(s" ((newIndex - 1) / magicNumber) = ${((newIndex - 1) / magicNumber)}")*/
 
               (math.abs(newIndex) + a.size - 2) / magicNumber
             }
 
-            println(s"WRAP AROUND ${numberOfWrapArounds}")
+            // println(s"WRAP AROUND ${numberOfWrapArounds}")
 
             math.floorMod(newIndex - numberOfWrapArounds, a.size)
           } else {
@@ -88,23 +90,30 @@ object Day20:
 
           // println(s"moving $dI from $i to $adjustedNewIndex")
 
-          if (adjustedNewIndex == i) {
-            // println("FISHY STUFF NEG NUMBER")
-          }
-
-          a.remove(i)
-          a.insert(adjustedNewIndex.toInt, (dI, true))
+          a.remove(actualI)
+          a.insert(adjustedNewIndex.toInt, org)
 
         }
 
-        println
-        loop(i, a)
+        // println
+        loop(i + 1, a, indexMap)
       }
 
-    loop(0, input.map(i => (i, false))).map(_._1)
+    val initialItemsWithIndex = input.zipWithIndex
+
+    (1 to timesToMix)
+      .foldLeft(initialItemsWithIndex) { (items, _) =>
+
+        val map = items.indices.map { actualIndex =>
+          items(actualIndex)._2 -> actualIndex
+        }.toMap
+
+        loop(0, items, map)
+      }
+      .map(_._1)
 
   def part1(lines: List[String]): Long =
-    val result = solve(parse(lines))
+    val result = mixNumbers(parse(lines), 1)
     // println(result.toList)
     val zeroI = result.indexWhere(_ == 0)
     List(1000, 2000, 3000).map { i =>
@@ -115,8 +124,7 @@ object Day20:
     }.sum
 
   def part2(lines: List[String]): Long =
-    0
-    /*val result = solve(parse(lines).map(_ * 811589153L))
+    val result = mixNumbers(parse(lines).map(_ * 811589153L), 10)
     // println(result.toList)
     val zeroI = result.indexWhere(_ == 0)
     List(1000, 2000, 3000).map { i =>
@@ -124,4 +132,4 @@ object Day20:
       println(a)
       a
 
-    }.sum*/
+    }.sum
