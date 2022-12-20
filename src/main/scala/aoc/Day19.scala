@@ -119,14 +119,14 @@ object Day19:
             state.obsidianRobots < blueprint.maxObsidianRobots
           )
             state
-              .advanceTimeUntil(_.canBuildObsidianRobot(blueprint), 3)
+              .advanceTimeUntil(_.canBuildObsidianRobot(blueprint), 4)
               .map(_.advanceTime(1).addObsidianRobot(blueprint))
           else None
 
         val buildClayRobot =
           if (!state.canBuildGeodeRobot(blueprint) && state.clayRobots < blueprint.maxClayRobots)
             state
-              .advanceTimeUntil(_.canBuildClayRobot(blueprint), 3)
+              .advanceTimeUntil(_.canBuildClayRobot(blueprint), 6)
               .map(
                 _.advanceTime(1)
                   .addClayRobot(blueprint)
@@ -135,7 +135,7 @@ object Day19:
 
         val buildOreRobot =
           if (!state.canBuildGeodeRobot(blueprint) && state.oreRobots < blueprint.maxOreRobots)
-            state.advanceTimeUntil(_.canBuildOreRobot(blueprint), 3).map(_.advanceTime(1).addOreRobot(blueprint))
+            state.advanceTimeUntil(_.canBuildOreRobot(blueprint), 4).map(_.advanceTime(1).addOreRobot(blueprint))
           else None
 
         val justWait =
