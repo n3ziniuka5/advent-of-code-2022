@@ -1,7 +1,7 @@
 package aoc
 
 import aoc.Common.timed
-import Day22.Facing.{Down, Left, Right, Up}
+import Day22.Facing._
 
 import scala.annotation.tailrec
 import scala.io.Source
@@ -16,6 +16,12 @@ object Day22:
 
   enum Facing:
     case Left, Right, Up, Down
+
+  def opposite(facing: Facing): Facing = facing match
+    case Left  => Right
+    case Right => Left
+    case Up    => Down
+    case Down  => Up
 
   def parseDirections(str: String): List[Char | Int] =
     @tailrec
@@ -65,6 +71,50 @@ object Day22:
         val r = (1 to input.numRows).find(r => input.map.contains((r, col))).get
         (r, col, facing)
 
+  def hardcodedCubeTransition(input: Input, row: Int, col: Int, facing: Facing): (Int, Int, Facing) =
+    val a = (51 to 100).map { col =>
+      (1, col, Up) -> (100 + col, 1, Right)
+    }
+
+    val b = (1 to 50).map { col =>
+      (200, col, Down) -> (1, 100 + col, Down)
+    }
+
+    val c = (101 to 150).map { col =>
+      (50, col, Down) -> (col - 50, 100, Left)
+    }
+
+    val d = (51 to 100).map { row =>
+      (row, 51, Left) -> (101, row - 50, Down)
+    }
+
+    val e = (101 to 150).map { row =>
+      val t = (101 to 150).zip(50 to 1 by -1).toMap
+      (row, 1, Left) -> (t(row), 51, Right)
+    }
+
+    val f = (51 to 100).map { col =>
+      (150, col, Down) -> (col + 100, 50, Left)
+    }
+
+    val g = (101 to 150).map { row =>
+      val t = (101 to 150).zip(50 to 1 by -1).toMap
+      (row, 100, Right) -> (t(row), 150, Left)
+    }
+
+    val all = a.toMap ++ b.toMap ++ c.toMap ++ d.toMap ++ e.toMap ++ f.toMap ++ g.toMap
+
+    val reverse = all.map { case (from, to) =>
+      (to._1, to._2, opposite(to._3)) -> (from._1, from._2, opposite(from._3))
+    }
+
+    val combined = all ++ reverse
+
+    combined.getOrElse(
+      (row, col, facing),
+      throw new RuntimeException(s"transition from $row $col to $facing is not implemented")
+    )
+
   @tailrec
   def solve(
     input: Input,
@@ -89,7 +139,6 @@ object Day22:
         solve(input.copy(directions = tail), currentRow, currentCol, newFacing, transition)
 
       case 0 :: tail =>
-        // println("skipping")
         solve(input.copy(directions = tail), currentRow, currentCol, facing, transition)
       case (n: Int) :: tail =>
         val (newRow, newCol, newFacing) = facing match
@@ -138,4 +187,4 @@ object Day22:
     val input       = parse(lines)
     val startColumn = (1 to input.numCols).find(y => input.map.contains((1, y)) && input.map((1, y)) == '.').get
 
-    solve(input, 1, startColumn, Right, plainTransition)
+    solve(input, 1, startColumn, Right, hardcodedCubeTransition)
