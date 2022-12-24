@@ -64,7 +64,7 @@ object Day24:
       pq: mutable.PriorityQueue[(Point, Int)],
       checkpoints: List[Point],
       visited: Set[(Point, Int)],
-      stormAtMinute: Vector[MultiDict[Point, Char]]
+      stormAtMinute: (Int, MultiDict[Point, Char])
     ): Int =
       val (point, steps) = pq.dequeue()
       if (point == checkpoints.head)
@@ -78,13 +78,13 @@ object Day24:
       else
         val addedStep = steps + 1
         val newStorm =
-          if (stormAtMinute.size <= addedStep)
-            stormAtMinute :+ advanceStorm(stormAtMinute(steps), input.start, input.finish)
+          if (stormAtMinute._1 != addedStep)
+            (addedStep, advanceStorm(stormAtMinute._2, input.start, input.finish))
           else stormAtMinute
 
         val travelTo = point.couldTravelTo
           .filter(isWithinBounds(_, input))
-          .filterNot(p => newStorm(addedStep).containsKey(p))
+          .filterNot(p => newStorm._2.containsKey(p))
           .filterNot(p => visited.contains((p, addedStep)))
 
         pq.enqueue(travelTo.map((_, addedStep))*)
@@ -92,7 +92,7 @@ object Day24:
         loop(pq, checkpoints, visited + ((point, steps)), newStorm)
 
     val pq = mutable.PriorityQueue((input.start, 0))(Ordering.by(state => -state._2))
-    loop(pq, goTo, Set.empty, Vector(input.storm))
+    loop(pq, goTo, Set.empty, (0, input.storm))
 
   def part1(lines: List[String]): Int =
     val input = parse(lines)
