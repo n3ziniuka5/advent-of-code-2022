@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 
 object Day1:
     def main(args: Array[String]): Unit =
-        val lines = Source.fromResource("day1.txt").getLines().toList
+        val lines = InputUtils.fetchInput(2024, 1)
         timed("Part 1", part1(lines))
         timed("Part 2", part2(lines))
 
