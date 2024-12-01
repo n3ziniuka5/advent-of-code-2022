@@ -9,11 +9,10 @@ object InputUtils:
 
     // sample numbers start from 1, don't judge me
     def fetchSample(year: Int, day: Int, sampleNumber: Int = 1): List[String] =
-        val samplesFolder = s"$cacheDir/$year/$day"
+        val samplesFolder = s"$cacheDir/day-$day"
         File(samplesFolder).mkdirs()
 
-        val samplePath = s"$samplesFolder/sample-$sampleNumber.txt"
-        val sampleFile = File(samplePath)
+        val sampleFile = File(s"$samplesFolder/sample-$sampleNumber.txt")
 
         if sampleFile.exists() then io.Source.fromFile(sampleFile).getLines().toList
         else
@@ -38,7 +37,7 @@ object InputUtils:
             sample.split("\n").toList
 
     def fetchInput(year: Int, day: Int): List[String] =
-        val inputFolder = s"$cacheDir/$year/$day"
+        val inputFolder = s"$cacheDir/day-$day"
         File(inputFolder).mkdirs()
 
         val inputFile = File(s"$inputFolder/input.txt")
