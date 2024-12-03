@@ -13,17 +13,16 @@ object Day2:
         timed("Part 2", part2(lines))
 
     def part1(lines: List[String]): Long =
-        lines.count(lineSafe)
+        lines.map(parseLine).count(lineSafe)
 
     def part2(lines: List[String]): Long =
-        lines.count(safeWithDampener)
+        lines.map(parseLine).count(safeWithDampener)
 
-    def lineSafe(line: String): Boolean =
-        val originalNumbers = line.split(" ").map(_.toInt).toList
-        val sortedAsc       = originalNumbers.sorted
-        val sortedDesc      = originalNumbers.sorted(Ordering[Int].reverse)
-        val gradual         = originalNumbers == sortedAsc || originalNumbers == sortedDesc
-        gradual && originalNumbers
+    def lineSafe(line: Vector[Int]): Boolean =
+        val sortedAsc  = line.sorted
+        val sortedDesc = line.sorted(Ordering[Int].reverse)
+        val gradual    = line == sortedAsc || line == sortedDesc
+        gradual && line
             .sliding(2)
             .forall: pair =>
                 val a    = pair(0)
@@ -31,8 +30,10 @@ object Day2:
                 val diff = math.abs(a - b)
                 diff >= 1 && diff <= 3
 
-    def safeWithDampener(line: String): Boolean =
-        val numberStrings = line.split(" ").toVector
-        numberStrings.indices.exists: removeNth =>
-            val withoutNth = numberStrings.zipWithIndex.filterNot((_, i) => i == removeNth)
-            lineSafe(withoutNth.map(_._1).mkString(" "))
+    def safeWithDampener(line: Vector[Int]): Boolean =
+        line.indices.exists: removeNth =>
+            val withoutNth = line.patch(removeNth, Nil, 1)
+            lineSafe(withoutNth)
+
+    def parseLine(line: String): Vector[Int] =
+        line.split(" ").map(_.toInt).toVector
