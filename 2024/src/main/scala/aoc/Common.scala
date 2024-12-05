@@ -1,6 +1,7 @@
 package aoc
 
 import scala.collection.mutable
+import scala.collection.SeqOps
 
 object Common:
     def timed[A](label: String, f: => A): Unit =
@@ -9,6 +10,8 @@ object Common:
         val end   = System.currentTimeMillis()
 
         println(s"$label answer - $res It took ${end - start}ms")
+
+    extension [A, CC[_], C](collection: SeqOps[A, CC, C]) def middle: A = collection(collection.size / 2)
 
     extension [A](q: mutable.PriorityQueue[A])
         def enqueueAndKeepMaxSize(element: A, maxSize: Int): mutable.PriorityQueue[A] =
