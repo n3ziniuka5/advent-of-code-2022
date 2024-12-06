@@ -4,6 +4,7 @@ import aoc.Common.timed
 
 import scala.annotation.tailrec
 import scala.language.experimental.namedTuples
+import scala.collection.parallel.CollectionConverters.*
 
 object Day6:
     def main(args: Array[String]): Unit =
@@ -26,7 +27,7 @@ object Day6:
 
     def part2(lines: List[String]): Long =
         val (map, start) = parse(lines)
-        numLoops(map, start, Direction.Up, 0)
+        numLoops(map, start)
 
     def parse(lines: List[String]): (map: Map2d[Char], start: Point) =
         val map   = Map2d.fromLines(lines)
@@ -39,21 +40,28 @@ object Day6:
         case Direction.Left  => point.left
         case Direction.Right => point.right
 
-    @tailrec
     def numLoops(
         map: Map2d[Char],
-        current: Point,
-        direction: Direction,
-        foundLoops: Int
+        startPoint: Point
     ): Int =
-        val next = move(current, direction)
-        if map.get(next).contains('.') then
-            val wallPlaced             = Map2d.apply(map.underlying.updated(next, '#'))
-            val loopExistsIfPlacedHere = travel(wallPlaced, current, direction, Set.empty).inLoop
-            val newLoopCount           = if loopExistsIfPlacedHere then foundLoops + 1 else foundLoops
-            numLoops(map, next, direction, newLoopCount)
-        else if map.get(next).contains('#') then numLoops(map, current, direction.turn, foundLoops)
-        else foundLoops
+        @tailrec
+        def collectSearches(
+            current: Point,
+            direction: Direction,
+            placedWallsAt: Set[Point],
+            result: List[(map: Map2d[Char], from: Point, direction: Direction)]
+        ): List[(map: Map2d[Char], from: Point, direction: Direction)] =
+            val next = move(current, direction)
+            if map.get(next).contains('.') then
+                if placedWallsAt.contains(next) then collectSearches(next, direction, placedWallsAt, result)
+                else
+                    val wallPlaced = Map2d.apply(map.underlying.updated(next, '#'))
+                    collectSearches(next, direction, placedWallsAt + next, (wallPlaced, current, direction) +: result)
+            else if map.get(next).contains('#') then collectSearches(current, direction.turn, placedWallsAt, result)
+            else result
+
+        collectSearches(startPoint, Direction.Up, Set.empty, List.empty).par.count: search =>
+            travel(search.map, search.from, search.direction, Set.empty).inLoop
 
     @tailrec
     def travel(
@@ -64,7 +72,7 @@ object Day6:
     ): (visited: Set[Point], inLoop: Boolean) =
         val next       = move(current, direction)
         val newVisited = visited + ((current, direction))
-        if visited.contains((current, direction)) then (newVisited.map(_._1), true)
+        if visited.contains((current, direction)) then (visited.map(_._1), true)
         else if map.get(next).contains('.') then travel(map, next, direction, newVisited)
         else if map.get(next).contains('#') then travel(map, current, direction.turn, newVisited)
         else (newVisited.map(_._1), false)
