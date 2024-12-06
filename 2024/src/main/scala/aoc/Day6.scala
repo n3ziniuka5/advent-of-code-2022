@@ -2,8 +2,6 @@ package aoc
 
 import aoc.Common.timed
 
-import scala.collection.mutable
-import scala.io.Source
 import scala.annotation.tailrec
 import scala.language.experimental.namedTuples
 
@@ -24,32 +22,49 @@ object Day6:
 
     def part1(lines: List[String]): Long =
         val (map, start) = parse(lines)
-        travel(map, start, Direction.Up).visited.size
+        travel(map, start, Direction.Up, Set.empty).visited.size
 
     def part2(lines: List[String]): Long =
         val (map, start) = parse(lines)
-        travel(map, start, Direction.Up).visited.count: wallPoint =>
-            if wallPoint == start then false
-            else
-                val updatedMap = Map2d.apply(map.underlying.updated(wallPoint, '#'))
-                travel(updatedMap, start, Direction.Up).inLoop
+        numLoops(map, start, Direction.Up, 0)
 
     def parse(lines: List[String]): (map: Map2d[Char], start: Point) =
         val map   = Map2d.fromLines(lines)
         val start = map.underlying.find((_, v) => v == '^').get._1
         (Map2d(map.underlying.updated(start, '.')), start)
 
-    def travel(map: Map2d[Char], start: Point, direction: Direction): (visited: Set[Point], inLoop: Boolean) =
-        def loop(current: Point, direction: Direction, visited: Set[(Point, Direction)]): (Set[Point], Boolean) =
-            val next = direction match
-                case Direction.Up    => current.up
-                case Direction.Down  => current.down
-                case Direction.Left  => current.left
-                case Direction.Right => current.right
-            val newVisited = visited + ((current, direction))
-            if visited.contains((current, direction)) then (newVisited.map(_._1), true)
-            else if map.get(next).contains('.') then loop(next, direction, newVisited)
-            else if map.get(next).contains('#') then loop(current, direction.turn, newVisited)
-            else (newVisited.map(_._1), false)
+    def move(point: Point, direction: Direction): Point = direction match
+        case Direction.Up    => point.up
+        case Direction.Down  => point.down
+        case Direction.Left  => point.left
+        case Direction.Right => point.right
 
-        loop(start, direction, Set.empty)
+    @tailrec
+    def numLoops(
+        map: Map2d[Char],
+        current: Point,
+        direction: Direction,
+        foundLoops: Int
+    ): Int =
+        val next = move(current, direction)
+        if map.get(next).contains('.') then
+            val wallPlaced             = Map2d.apply(map.underlying.updated(next, '#'))
+            val loopExistsIfPlacedHere = travel(wallPlaced, current, direction, Set.empty).inLoop
+            val newLoopCount           = if loopExistsIfPlacedHere then foundLoops + 1 else foundLoops
+            numLoops(map, next, direction, newLoopCount)
+        else if map.get(next).contains('#') then numLoops(map, current, direction.turn, foundLoops)
+        else foundLoops
+
+    @tailrec
+    def travel(
+        map: Map2d[Char],
+        current: Point,
+        direction: Direction,
+        visited: Set[(Point, Direction)]
+    ): (visited: Set[Point], inLoop: Boolean) =
+        val next       = move(current, direction)
+        val newVisited = visited + ((current, direction))
+        if visited.contains((current, direction)) then (newVisited.map(_._1), true)
+        else if map.get(next).contains('.') then travel(map, next, direction, newVisited)
+        else if map.get(next).contains('#') then travel(map, current, direction.turn, newVisited)
+        else (newVisited.map(_._1), false)

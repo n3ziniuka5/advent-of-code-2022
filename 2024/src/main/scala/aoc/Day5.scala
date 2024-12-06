@@ -2,9 +2,6 @@ package aoc
 
 import aoc.Common.timed
 import aoc.Common.middle
-
-import scala.collection.mutable
-import scala.io.Source
 import scala.annotation.tailrec
 
 object Day5:

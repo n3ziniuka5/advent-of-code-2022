@@ -2,6 +2,7 @@ package aoc
 
 import scala.collection.mutable
 import scala.collection.SeqOps
+import scala.annotation.nowarn
 
 object Common:
     def timed[A](label: String, f: => A): Unit =
@@ -14,6 +15,7 @@ object Common:
     extension [A, CC[_], C](collection: SeqOps[A, CC, C]) def middle: A = collection(collection.size / 2)
 
     extension [A](q: mutable.PriorityQueue[A])
+        @nowarn("msg=discarded non-Unit value of type A")
         def enqueueAndKeepMaxSize(element: A, maxSize: Int): mutable.PriorityQueue[A] =
             q.enqueue(element)
             if q.size > maxSize then q.dequeue()

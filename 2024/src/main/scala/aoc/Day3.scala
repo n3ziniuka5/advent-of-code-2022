@@ -2,10 +2,6 @@ package aoc
 
 import aoc.Common.timed
 
-import scala.collection.mutable
-import scala.io.Source
-import scala.annotation.tailrec
-
 object Day3:
     def main(args: Array[String]): Unit =
         val lines = InputUtils.fetchInput(2024, 3)

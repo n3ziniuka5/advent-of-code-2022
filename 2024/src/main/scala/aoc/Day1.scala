@@ -2,10 +2,6 @@ package aoc
 
 import aoc.Common.timed
 
-import scala.collection.mutable
-import scala.io.Source
-import scala.annotation.tailrec
-
 object Day1:
     def main(args: Array[String]): Unit =
         val lines = InputUtils.fetchInput(2024, 1)
@@ -21,5 +17,5 @@ object Day1:
 
     def part2(lines: List[String]): Long =
         val List(firstList, secondList) = parseLines(lines)
-        val rightListCount              = secondList.groupBy(identity).mapValues(_.length)
+        val rightListCount              = secondList.groupBy(identity).view.mapValues(_.length).toMap
         firstList.map(a => rightListCount.getOrElse(a, 0) * a).sum
