@@ -23,7 +23,7 @@ object Day6:
 
     def part1(lines: List[String]): Long =
         val (map, start) = parse(lines)
-        travel(map, start, Direction.Up, Set.empty).visited.size
+        pointsTraveled(map, start, Direction.Up, Set.empty)
 
     def part2(lines: List[String]): Long =
         val (map, start) = parse(lines)
@@ -61,18 +61,33 @@ object Day6:
             else result
 
         collectSearches(startPoint, Direction.Up, Set.empty, List.empty).par.count: search =>
-            travel(search.map, search.from, search.direction, Set.empty).inLoop
+            isLooping(search.map, search.from, search.direction, Set.empty)
 
     @tailrec
-    def travel(
+    def isLooping(map: Map2d[Char], current: Point, direction: Direction, visited: Set[(Point, Direction)]): Boolean =
+        // returns point before the wall
+        def findNextWall(from: Point): Option[Point] =
+            val next = move(from, direction)
+            if map.get(next).contains('.') then findNextWall(next)
+            else if map.get(next).contains('#') then Some(from)
+            else None
+
+        val maybeWallBefore = findNextWall(current)
+        maybeWallBefore match
+            case None => false
+            case Some(wallBefore) =>
+                if visited.contains((wallBefore, direction)) then true
+                else isLooping(map, wallBefore, direction.turn, visited + ((wallBefore, direction)))
+
+    @tailrec
+    def pointsTraveled(
         map: Map2d[Char],
         current: Point,
         direction: Direction,
-        visited: Set[(Point, Direction)]
-    ): (visited: Set[Point], inLoop: Boolean) =
+        visited: Set[Point]
+    ): Int =
         val next       = move(current, direction)
-        val newVisited = visited + ((current, direction))
-        if visited.contains((current, direction)) then (visited.map(_._1), true)
-        else if map.get(next).contains('.') then travel(map, next, direction, newVisited)
-        else if map.get(next).contains('#') then travel(map, current, direction.turn, newVisited)
-        else (newVisited.map(_._1), false)
+        val newVisited = visited + current
+        if map.get(next).contains('.') then pointsTraveled(map, next, direction, newVisited)
+        else if map.get(next).contains('#') then pointsTraveled(map, current, direction.turn, newVisited)
+        else newVisited.size
