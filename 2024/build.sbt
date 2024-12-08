@@ -4,8 +4,6 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.5.2"
 
-ThisBuild / usePipelining := true
-
 name := "advent-of-code-2024"
 
 scalacOptions ++= List(

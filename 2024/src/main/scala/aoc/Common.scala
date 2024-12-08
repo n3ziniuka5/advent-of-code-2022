@@ -45,6 +45,9 @@ case class Point(x: Int, y: Int):
     def inBounds(map: Map2DVec[?]): Boolean =
         x >= 0 && x <= map.maxX && y >= 0 && y <= map.maxY
 
+    def manhattanDistance(other: Point): Int =
+        math.abs(x - other.x) + math.abs(y - other.y)
+
 case class Map2DVec[V](underlying: Vector[Vector[V]]):
     val maxX = underlying.size - 1
     val maxY = underlying.head.size - 1
