@@ -3,6 +3,7 @@ package aoc
 import scala.collection.mutable
 import scala.collection.SeqOps
 import scala.annotation.nowarn
+import zio.prelude.ZSet
 
 object Common:
     def timed[A](label: String, f: => A): Unit =
@@ -21,6 +22,24 @@ object Common:
             if q.size > maxSize then q.dequeue()
 
             q
+
+type MultiSetLong[A] = ZSet[A, Long]
+object MultiSetLong:
+    def apply[A](elements: A*): MultiSetLong[A] =
+        fromIterable(elements)
+
+    def fromIterable[A](elements: Iterable[A]): MultiSetLong[A] =
+        ZSet.fromMap(
+          elements
+              .foldLeft(Map.empty[A, Long]) { (map, a) =>
+                  map + (a -> map.get(a).fold(1L)(_ + 1))
+              }
+        )
+
+    def fromMap[A](map: Map[A, Long]): MultiSetLong[A] =
+        ZSet.fromMap(map)
+
+    def empty[A]: MultiSetLong[A] = ZSet.empty
 
 case class Point(x: Int, y: Int):
     def up: Point    = Point(x, y - 1)
