@@ -31,7 +31,7 @@ object Day8:
         val dY = p1.y - p2.y
 
         @tailrec
-        def directSightPoints(start: Point, dx: Int, dy: Int, results: List[Point]): Set[Point] =
+        def directSightPoints(start: Point, dx: Long, dy: Long, results: List[Point]): Set[Point] =
             val next = Point(start.x + dx, start.y + dy)
             if next.inBounds(map) then
                 if restrictDistance then Set(next)

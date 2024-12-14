@@ -4,6 +4,7 @@ import scala.collection.mutable
 import scala.collection.SeqOps
 import scala.annotation.nowarn
 import zio.prelude.ZSet
+import aoc.Common.toIntSafe
 
 object Common:
     def timed[A](label: String, f: => A): Unit =
@@ -23,6 +24,11 @@ object Common:
 
             q
 
+    extension (num: Long)
+        def toIntSafe: Int =
+            if num > Int.MaxValue then throw IllegalArgumentException(s"Number $num is too large to convert to Int")
+            else num.toInt
+
 type MultiSetLong[A] = ZSet[A, Long]
 object MultiSetLong:
     def apply[A](elements: A*): MultiSetLong[A] =
@@ -41,7 +47,7 @@ object MultiSetLong:
 
     def empty[A]: MultiSetLong[A] = ZSet.empty
 
-case class Point(x: Int, y: Int):
+case class Point(x: Long, y: Long):
     def up: Point    = Point(x, y - 1)
     def down: Point  = Point(x, y + 1)
     def left: Point  = Point(x - 1, y)
@@ -58,13 +64,21 @@ case class Point(x: Int, y: Int):
         y <- List(-1, 0, 1) if x != 0 || y != 0
     yield Point(this.x + x, this.y + y)
 
+    def *(n: Long): Point = Point(x * n, y * n)
+    def +(n: Long): Point = Point(x + n, y + n)
+
+    def *(p: Point): Point = Point(x * p.x, y * p.y)
+    def +(p: Point): Point = Point(x + p.x, y + p.y)
+
+    def mod(xMod: Long, yMod: Long): Point = Point(x % xMod, y % yMod)
+
     def inBounds(map: Map2d[?]): Boolean =
         x >= 0 && x <= map.maxX && y >= 0 && y <= map.maxY
 
     def inBounds(map: Map2DVec[?]): Boolean =
         x >= 0 && x <= map.maxX && y >= 0 && y <= map.maxY
 
-    def manhattanDistance(other: Point): Int =
+    def manhattanDistance(other: Point): Long =
         math.abs(x - other.x) + math.abs(y - other.y)
 
 case class Map2DVec[V](underlying: Vector[Vector[V]]):
@@ -73,7 +87,7 @@ case class Map2DVec[V](underlying: Vector[Vector[V]]):
 
     def apply(x: Int): Vector[V] = underlying(x)
     def apply(x: Int, y: Int): V = underlying(x)(y)
-    def apply(point: Point): V   = underlying(point.x)(point.y)
+    def apply(point: Point): V   = underlying(point.x.toIntSafe)(point.y.toIntSafe)
 
     def transpose: Map2DVec[V] = Map2DVec(underlying.transpose)
 
@@ -109,7 +123,7 @@ case class Map2d[V](underlying: Map[Point, V]):
             val point = Point(x, y)
             if underlying.contains(point) then underlying(point)
             else '.'
-        ).grouped((maxX - minX) + 1).map(_.mkString).mkString("\n")
+        ).grouped(((maxX - minX) + 1).toIntSafe).map(_.mkString).mkString("\n")
 
 object Map2d:
     def fromLines(lines: List[String]): Map2d[Char] =

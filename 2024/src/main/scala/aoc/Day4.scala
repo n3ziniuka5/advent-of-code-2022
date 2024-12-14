@@ -18,8 +18,8 @@ object Day4:
 
     def countXmas(map: Map2d[Char]): Int =
         val a = for
-            x <- 0 to map.maxX
-            y <- 0 to map.maxY
+            x <- 0L to map.maxX
+            y <- 0L to map.maxY
         yield
             val point = Point(x, y)
             if map.get(point).contains('X') then
@@ -41,8 +41,8 @@ object Day4:
 
     def countXmasPart2(map: Map2d[Char]): Int =
         val a = for
-            x <- 0 to map.maxX
-            y <- 0 to map.maxY
+            x <- 0L to map.maxX
+            y <- 0L to map.maxY
         yield
             val point = Point(x, y)
             if map.get(point).contains('A') then
