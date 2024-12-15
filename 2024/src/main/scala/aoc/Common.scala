@@ -47,11 +47,20 @@ object MultiSetLong:
 
     def empty[A]: MultiSetLong[A] = ZSet.empty
 
+enum Direction:
+    case Up, Down, Left, Right
+
 case class Point(x: Long, y: Long):
     def up: Point    = Point(x, y - 1)
     def down: Point  = Point(x, y + 1)
     def left: Point  = Point(x - 1, y)
     def right: Point = Point(x + 1, y)
+
+    def move(direction: Direction): Point = direction match
+        case Direction.Up    => up
+        case Direction.Down  => down
+        case Direction.Left  => left
+        case Direction.Right => right
 
     def topLeft: Point     = Point(x - 1, y - 1)
     def topRight: Point    = Point(x + 1, y - 1)
@@ -114,6 +123,8 @@ case class Map2d[V](underlying: Map[Point, V]):
     def apply(k: Point): V = underlying(k)
 
     def get(k: Point): Option[V] = underlying.get(k)
+
+    def updated(k: Point, v: V): Map2d[V] = Map2d(underlying.updated(k, v))
 
     override def toString: String =
         (for
