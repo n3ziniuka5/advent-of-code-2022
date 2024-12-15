@@ -2,6 +2,7 @@ package aoc
 
 import java.io.File
 import java.nio.file.Files
+import org.apache.commons.lang3.StringEscapeUtils
 
 object InputUtils:
     val cacheDir = ".cache"
@@ -16,9 +17,11 @@ object InputUtils:
 
         if sampleFile.exists() then io.Source.fromFile(sampleFile).getLines().toList
         else
-            val response = requests
-                .get(s"https://adventofcode.com/$year/day/$day", headers = "cookie" -> s"session=$session" :: Nil)
-                .text()
+            val response =
+                val unescaped = requests
+                    .get(s"https://adventofcode.com/$year/day/$day", headers = "cookie" -> s"session=$session" :: Nil)
+                    .text()
+                StringEscapeUtils.unescapeHtml4(unescaped)
 
             def extractSample(currentNumber: Int, searchStart: Int): String =
                 val startToken  = "<pre><code>"
